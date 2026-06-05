@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edición Lupa · Agustín & Jo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { background-color: #f2f2f2; }
+        body {
+            font-family: 'Inter', sans-serif;
+            color: #202020;
+            min-height: 100vh;
+            overflow-x: hidden;
+            opacity: 0;
+            animation: blurFadeIn 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.1s forwards;
+            position: relative;
+        }
+        @keyframes blurFadeIn {
+            from { opacity: 0; transform: translateY(14px); filter: blur(4px); }
+            to   { opacity: 1; transform: translateY(0);   filter: blur(0); }
+        }
+        @keyframes blurFadeUp {
+            from { opacity: 0; transform: translateY(20px); filter: blur(3px); }
+            to   { opacity: 1; transform: translateY(0);   filter: blur(0); }
+        }
+        @keyframes revealParte {
+            from { opacity: 0; transform: translateY(28px); filter: blur(5px); }
+            to   { opacity: 1; transform: translateY(0);   filter: blur(0); }
+        }
+        @keyframes polaroidIn {
+            from { opacity: 0; transform: translateY(20px) rotate(var(--rot-end)) scale(0.92); filter: blur(4px); }
+            to   { opacity: 1; transform: translateY(0)    rotate(var(--rot-end)) scale(1);    filter: blur(0); }
+        }
+        @keyframes fadeOutBtn {
+            from { opacity: 1; transform: translateY(0); }
+            to   { opacity: 0; transform: translateY(8px); }
+        }
+
+        /* ── CONTENIDO CENTRAL ── */
+        .content-wrap {
+            position: relative;
+            z-index: 2;
+        }
+
+        /* ── HEADER ── */
+        .header {
+            padding: 52px 6vw 0 6vw;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            flex-wrap: wrap;
+            gap: 16px;
+            opacity: 0;
+            animation: blurFadeUp 1.4s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards;
+        }
+        .header-label {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.58rem;
+            letter-spacing: 0.22em;
+            color: #999;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+        .header-titulo {
+            font-size: clamp(2.4rem, 10vw, 3.8rem);
+            font-weight: 700;
+            letter-spacing: -0.04em;
+            line-height: 0.95;
+            color: #202020;
+        }
+        .header-meta {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.56rem;
+            letter-spacing: 0.16em;
+            color: #aaa;
+            text-transform: uppercase;
+            text-align: right;
+            line-height: 2;
+            align-self: flex-end;
+        }
+
+        /* ── DIVIDER ── */
+        .divider {
+            width: calc(100% - 12vw);
+            margin: 32px 6vw 0 6vw;
+            height: 1px;
+            background-color: #c4c4c4;
+        }
+
+        /* ── ACUERDO ── */
+        .acuerdo-wrap {
+            padding: 40px 6vw 0 6vw;
+            opacity: 0;
+            animation: blurFadeUp 1.4s cubic-bezier(0.16, 1, 0.3, 1) 0.5s forwards;
+        }
+        .acuerdo {
+            display: block;
+            border: 1px solid #c4c4c4;
+            padding: 16px 22px;
+            font-size: 0.83rem;
+            font-weight: 400;
+            letter-spacing: 0.02em;
+            color: #444;
+            line-height: 1.7;
+        }
+        .acuerdo-tag {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.52rem;
+            letter-spacing: 0.2em;
+            color: #aaa;
+            text-transform: uppercase;
+            display: block;
+            margin-bottom: 7px;
+        }
+
+        /* ── BODY ── */
+        .body { padding: 52px 6vw 0 6vw; }
+
+        /* ── PARTE ── */
+        .parte {
+            margin-bottom: 64px;
+            opacity: 0;
+            animation: blurFadeUp 1.4s cubic-bezier(0.16, 1, 0.3, 1) 0.6s forwards;
+        }
+        /* Parte 1 tiene su propio padding-bottom para que pol-06 no se vea cortada */
+        #parte-1 { padding-bottom: 120px; }
+        @media (min-width: 1100px) {
+            #parte-1 { padding-bottom: 180px; }
+        }
+        .parte.locked { display: none; }
+        .parte.unlocked {
+            display: block;
+            opacity: 0;
+            animation: revealParte 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        /* Padding extra en parte-2 para dar espacio a las polaroids absolutas que viven dentro */
+        #parte-2 { padding-bottom: 280px; }
+        @media (min-width: 1100px) {
+            #parte-2 { padding-bottom: 360px; }
+        }
+        .parte-header {
+            display: flex;
+            align-items: baseline;
+            gap: 14px;
+            margin-bottom: 4px;
+        }
+        .parte-num {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.6rem;
+            font-weight: 700;
+            letter-spacing: 0.2em;
+            color: #202020;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+        .parte-titulo {
+            font-size: clamp(1.15rem, 5vw, 1.45rem);
+            font-weight: 600;
+            letter-spacing: -0.025em;
+            color: #202020;
+            line-height: 1.2;
+        }
+        .parte-desc {
+            font-size: 0.74rem;
+            font-weight: 300;
+            color: #999;
+            font-style: italic;
+            margin-top: 6px;
+            margin-bottom: 24px;
+            line-height: 1.6;
+        }
+        .parte-divider {
+            width: 100%;
+            height: 1px;
+            background-color: #ddd;
+            margin-bottom: 24px;
+        }
+
+        /* ── INSTRUCCIONES ── */
+        .instrucciones {
+            padding: 18px 22px;
+            background-color: #ebebeb;
+            border-left: 3px solid #202020;
+            margin-bottom: 28px;
+        }
+        .instrucciones p {
+            font-size: 0.84rem;
+            font-weight: 300;
+            line-height: 1.75;
+            color: #202020;
+        }
+        .instrucciones-tag {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.5rem;
+            letter-spacing: 0.2em;
+            color: #888;
+            text-transform: uppercase;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        /* ── PREGUNTAS ── */
+        .preguntas { list-style: none; }
+        .pregunta-item {
+            display: grid;
+            grid-template-columns: 32px 1fr;
+            gap: 14px;
+            padding: 18px 0;
+            border-bottom: 1px solid #e8e8e8;
+        }
+        .pregunta-item:first-child { border-top: 1px solid #e8e8e8; }
+        .pregunta-n {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.58rem;
+            font-weight: 700;
+            color: #202020;
+            letter-spacing: 0.08em;
+            padding-top: 3px;
+        }
+        .pregunta-texto {
+            font-size: 0.93rem;
+            font-weight: 300;
+            line-height: 1.75;
+            color: #202020;
+        }
+        .pregunta-extra {
+            display: block;
+            font-size: 0.72rem;
+            color: #999;
+            font-style: italic;
+            margin-top: 4px;
+            font-weight: 300;
+        }
+
+        /* ── PREMIO LIBRE ── */
+        .premio-libre {
+            margin-top: 18px;
+            padding: 20px 24px;
+            border: 1px dashed #c4c4c4;
+            background-color: #f6f6f6;
+        }
+        .premio-libre-tag {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.5rem;
+            letter-spacing: 0.2em;
+            color: #888;
+            text-transform: uppercase;
+            display: block;
+            margin-bottom: 8px;
+        }
+        .premio-libre-texto {
+            font-size: 0.88rem;
+            font-weight: 300;
+            line-height: 1.7;
+            color: #202020;
+        }
+        .premio-libre-nota {
+            display: block;
+            font-size: 0.7rem;
+            color: #999;
+            font-style: italic;
+            margin-top: 6px;
+        }
+
+        /* ── BOTÓN ── */
+        .btn-wrap { margin-top: 28px; }
+        .btn-wrap.oculto {
+            animation: fadeOutBtn 0.35s cubic-bezier(0.4, 0, 1, 1) forwards;
+            pointer-events: none;
+        }
+        .btn-siguiente {
+            position: relative;
+            display: flex;
+            width: 100%;
+            padding: 0;
+            background: none;
+            border: none;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .btn-inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            padding: 18px 22px;
+            background: #e0e0e0;
+            transition: background 0.25s ease;
+        }
+        .btn-texto {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.6rem;
+            font-weight: 700;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: #202020;
+        }
+        .btn-icono {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 1px solid rgba(32,32,32,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            color: #202020;
+            transition: transform 0.25s ease;
+            flex-shrink: 0;
+        }
+        @media (hover: hover) {
+            .btn-siguiente:hover .btn-inner { background: #d4d4d4; }
+            .btn-siguiente:hover .btn-icono { transform: translateX(3px); }
+        }
+
+        /* ── CIERRE ── */
+        .cierre {
+            padding: 40px 6vw 20px 6vw;
+            border-top: 1px solid #c4c4c4;
+            display: none;
+        }
+        .cierre.visible {
+            display: block;
+            animation: revealParte 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .cierre p {
+            font-size: 0.8rem;
+            font-weight: 300;
+            color: #aaa;
+            letter-spacing: 0.05em;
+            line-height: 2.2;
+        }
+
+        /* ── FOOTER ── */
+        .footer { padding: 20px 6vw 48px 6vw; }
+        .footer-label {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.52rem;
+            letter-spacing: 0.2em;
+            color: #c4c4c4;
+            text-transform: uppercase;
+        }
+
+        /* ════════════════════════════════════════
+           POLAROIDS DECORATIVAS (al fondo, en bordes)
+           ════════════════════════════════════════ */
+        .polaroid-deco {
+            position: absolute;
+            background: #fff;
+            padding: 8px 8px 28px 8px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.13), 0 1px 4px rgba(0,0,0,0.07);
+            z-index: 1;
+            pointer-events: none;
+            opacity: 0;
+            animation: polaroidIn 1.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            will-change: transform;
+        }
+        .polaroid-deco img {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: saturate(0.88) contrast(1.02);
+        }
+        .polaroid-deco .pol-img-frame {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            background: #e8e8e8;
+            overflow: hidden;
+        }
+        .polaroid-deco .pol-caption {
+            margin-top: 8px;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.42rem;
+            letter-spacing: 0.1em;
+            color: #999;
+            text-transform: uppercase;
+            text-align: center;
+            line-height: 1.4;
+        }
+
+        /* ── POLAROIDS ZONA 1 (header + premios) — 6 polaroids ──
+           Distribuidas dentro de la altura aprox de parte-1 (0 a 1700px en desktop).
+           Balance: 3 izq + 3 der intercaladas. */
+
+        /* MOBILE base */
+        .pol-01 { top: 30px;    left: -6vw;   width: 82px;  --rot-end: -11deg; animation-delay: 0.4s; }
+        .pol-02 { top: 150px;   right: -6vw;  width: 92px;  --rot-end: 12deg;  animation-delay: 0.55s; }
+        .pol-03 { top: 460px;   left: -7vw;   width: 68px;  --rot-end: 9deg;   animation-delay: 0.7s; }
+        .pol-04 { top: 940px;   right: -7vw;  width: 76px;  --rot-end: -8deg;  animation-delay: 0.85s; }
+        .pol-05 { top: 1290px;  left: -7vw;   width: 72px;  --rot-end: 13deg;  animation-delay: 1.0s; }
+        .pol-06 { top: 1870px;  right: -6vw;  width: 78px;  --rot-end: -10deg; animation-delay: 1.15s; }
+
+        /* ── POLAROIDS ZONA 2 (test) — 6 polaroids ──
+           Anidadas DENTRO de .parte#parte-2 con position absolute relativa a esa sección.
+           Solo aparecen cuando parte-2 se desbloquea.
+           Como parte-2 vive dentro del padding lateral del .body, los valores
+           left/right deben ser NEGATIVOS para compensar ese padding y que las
+           polaroids queden pegadas al borde del viewport. */
+        .pol-07 { top: 20px;    right: -9vw;  width: 92px;  --rot-end: 11deg;  animation-delay: 0.2s; }
+        .pol-08 { top: 260px;   left: -9vw;   width: 76px;  --rot-end: -13deg; animation-delay: 0.35s; }
+        .pol-09 { top: 520px;   right: -8vw;  width: 84px;  --rot-end: -7deg;  animation-delay: 0.5s; }
+        .pol-10 { top: 770px;   left: -9vw;   width: 96px;  --rot-end: 10deg;  animation-delay: 0.65s; }
+        .pol-11 { top: 1010px;  right: -8vw;  width: 78px;  --rot-end: -12deg; animation-delay: 0.8s; }
+        .pol-12 { top: 1230px;  left: -7vw;   width: 88px;  --rot-end: 8deg;   animation-delay: 0.95s; }
+
+        /* ── TABLET (768px+) ── */
+        @media (min-width: 768px) {
+            .header        { padding: 64px 16vw 0 16vw; }
+            .divider       { width: calc(100% - 32vw); margin: 36px 16vw 0 16vw; }
+            .acuerdo-wrap  { padding: 48px 16vw 0 16vw; }
+            .body          { padding: 64px 16vw 0 16vw; }
+            .cierre        { padding: 48px 16vw 24px 16vw; }
+            .footer        { padding: 24px 16vw 60px 16vw; }
+
+            .polaroid-deco { padding: 10px 10px 36px 10px; }
+            .polaroid-deco .pol-caption { font-size: 0.5rem; margin-top: 10px; }
+
+            /* Zona 1 — distribuida en zona de premios, 3 izq + 3 der */
+            .pol-01 { top: 70px;    left: 1.5vw;  width: 165px; --rot-end: -10deg; }
+            .pol-02 { top: 230px;   right: 1vw;   width: 195px; --rot-end: 8deg;   }
+            .pol-03 { top: 560px;   left: 0.5vw;  width: 130px; --rot-end: 13deg;  }
+            .pol-04 { top: 800px;   right: 0vw;   width: 175px; --rot-end: -7deg;  }
+            .pol-05 { top: 1180px;  left: auto; right: 1vw;   width: 205px; --rot-end: 6deg;   }
+            .pol-06 { top: 1480px;  right: 1.5vw; width: 145px; --rot-end: -12deg; }
+
+            /* Zona 2 — offset > 16vw (body padding) para que no tapen el texto */
+            .pol-07 { top: 30px;    right: -20vw; width: 148px; --rot-end: 10deg;  }
+            .pol-08 { top: 220px;   left: -20vw;  width: 140px; --rot-end: -13deg; }
+            .pol-09 { top: 460px;   right: -19vw; width: 140px; --rot-end: -6deg;  }
+            .pol-10 { top: 700px;   left: -20vw;  width: 148px; --rot-end: 9deg;   }
+            .pol-11 { top: 920px;   right: -20vw; width: 128px; --rot-end: -11deg; }
+            .pol-12 { top: 1140px;  left: -19vw;  width: 136px; --rot-end: 7deg;   }
+        }
+
+        /* ── DESKTOP (1100px+) — polaroids grandes y bien repartidas ── */
+        @media (min-width: 1100px) {
+            .pol-01 { top: 80px;    left: 2vw;    width: 200px; --rot-end: -11deg; }
+            .pol-02 { top: 260px;   right: 1.5vw; width: 235px; --rot-end: 7deg;   }
+            .pol-03 { top: 600px;   left: 1.5vw;  width: 145px; --rot-end: 13deg;  }
+            .pol-04 { top: 880px;   right: 1vw;   width: 210px; --rot-end: -8deg;  }
+            .pol-05 { top: 1240px;  left: auto; right: 2vw;   width: 240px; --rot-end: 5deg;   }
+            .pol-06 { top: 1560px;  right: 2vw;   width: 165px; --rot-end: -13deg; }
+
+            .pol-07 { top: 50px;    right: -15vw;   width: 158px; --rot-end: 9deg;   }
+            .pol-08 { top: 250px;   left: -14.5vw;  width: 154px; --rot-end: -14deg; }
+            .pol-09 { top: 500px;   right: -14vw;   width: 148px; --rot-end: -6deg;  }
+            .pol-10 { top: 760px;   left: -15vw;    width: 160px; --rot-end: 8deg;   }
+            .pol-11 { top: 1000px;  right: -14.5vw; width: 145px; --rot-end: -12deg; }
+            .pol-12 { top: 1240px;  left: -14vw;    width: 148px; --rot-end: 7deg;   }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- POLAROIDS ZONA 1 (zona de premios) — al fondo, position absolute al body -->
+    <div class="polaroid-deco pol-01">
+        <div class="pol-img-frame">
+            <img src="fotos/polaroid-01.jpg" alt="" onerror="this.style.display='none'">
+        </div>
+        <div class="pol-caption">/ 01</div>
+    </div>
+    <div class="polaroid-deco pol-02">
+        <div class="pol-img-frame">
+            <img src="fotos/polaroid-02.jpg" alt="" onerror="this.style.display='none'">
+        </div>
+        <div class="pol-caption">/ 02</div>
+    </div>
+    <div class="polaroid-deco pol-03">
+        <div class="pol-img-frame">
+            <img src="fotos/polaroid-03.jpg" alt="" onerror="this.style.display='none'">
+        </div>
+        <div class="pol-caption">/ 03</div>
+    </div>
+    <div class="polaroid-deco pol-04">
+        <div class="pol-img-frame">
+            <img src="fotos/polaroid-04.jpg" alt="" onerror="this.style.display='none'">
+        </div>
+        <div class="pol-caption">/ 04</div>
+    </div>
+    <div class="polaroid-deco pol-05">
+        <div class="pol-img-frame">
+            <img src="fotos/polaroid-05.jpg" alt="" onerror="this.style.display='none'">
+        </div>
+        <div class="pol-caption">/ 05</div>
+    </div>
+    <div class="polaroid-deco pol-06">
+        <div class="pol-img-frame">
+            <img src="fotos/polaroid-06.jpg" alt="" onerror="this.style.display='none'">
+        </div>
+        <div class="pol-caption">/ 06</div>
+    </div>
+
+    <!-- CONTENIDO CENTRAL -->
+    <div class="content-wrap">
+
+        <!-- HEADER -->
+        <div class="header">
+            <div>
+                <p class="header-label">[ TAXSS ]</p>
+                <h1 class="header-titulo">Edición<br>Lupa</h1>
+            </div>
+            <p class="header-meta">9 meses y medio.<br>Premios + Test.<br>Lo chico,<br>esta vez.</p>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- ACUERDO -->
+        <div class="acuerdo-wrap">
+            <div class="acuerdo">
+                <span class="acuerdo-tag">[ Antes de empezar ]</span>
+                Esta no va de los hitos. Va de lo chico, de lo que solo nosotros notamos, de lo que se queda dando vueltas sin que el resto cache.
+            </div>
+        </div>
+
+        <!-- BODY -->
+        <div class="body">
+
+            <!-- PARTE 01 — LOS PREMIOS -->
+            <div class="parte" id="parte-1">
+                <div class="parte-header">
+                    <span class="parte-num">[ 01 ]</span>
+                    <h2 class="parte-titulo">Los Premios · 2da ed.</h2>
+                </div>
+                <p class="parte-desc">Mismo formato que la primera. Esta vez con lupa.</p>
+                <div class="parte-divider"></div>
+
+                <div class="instrucciones">
+                    <span class="instrucciones-tag">[ Cómo se juega ]</span>
+                    <p>Cada uno responde lo suyo, en silencio. Después leemos en voz alta y comentamos al toque. No hay límite de tiempo por premio. Si algo se queda en el camino, lo guardamos para el premio libre del final.</p>
+                </div>
+
+                <ul class="preguntas">
+                    <li class="pregunta-item">
+                        <span class="pregunta-n">01.</span>
+                        <p class="pregunta-texto">La frase del otro que más repito sin darme cuenta.</p>
+                    </li>
+                    <li class="pregunta-item">
+                        <span class="pregunta-n">02.</span>
+                        <p class="pregunta-texto">La cosa que haces sin pensar y siempre me saca una risa.</p>
+                    </li>
+                    <li class="pregunta-item">
+                        <span class="pregunta-n">03.</span>
+                        <p class="pregunta-texto">Mi facha favorita tuya.</p>
+                    </li>
+                    <li class="pregunta-item">
+                        <span class="pregunta-n">04.</span>
+                        <p class="pregunta-texto">La canción que me recuerda a un momento específico de nosotros.</p>
+                    </li>
+                    <li class="pregunta-item">
+                        <span class="pregunta-n">05.</span>
+                        <p class="pregunta-texto">La FaceTime más memorable que hemos tenido.</p>
+                    </li>
+                    <li class="pregunta-item">
+                        <span class="pregunta-n">06.</span>
+                        <p class="pregunta-texto">El audio tuyo que más he vuelto a escuchar.</p>
+                    </li>
+                    <li class="pregunta-item">
+                        <span class="pregunta-n">07.</span>
+                        <p class="pregunta-texto">La foto tuya en mi galería que más miro.</p>
+                    </li>
+                    <li class="pregunta-item">
+                        <span class="pregunta-n">08.</span>
+                        <p class="pregunta-texto">Lo que más me sorprendió de ti cuando nos estábamos conociendo.</p>
+                    </li>
+                    <li class="pregunta-item">
+                        <span class="pregunta-n">09.</span>
+                        <p class="pregunta-texto">El gesto chiquitito que más me marcó este último tiempo.</p>
+                    </li>
+                    <li class="pregunta-item">
+                        <span class="pregunta-n">10.</span>
+                        <p class="pregunta-texto">El mejor regalo "no-regalo" del otro.<span class="pregunta-extra">Un gesto, no algo material.</span></p>
+                    </li>
+                    <li class="pregunta-item">
+                        <span class="pregunta-n">11.</span>
+                        <p class="pregunta-texto">Lo que le he copiado al otro sin darme cuenta.<span class="pregunta-extra">Un gesto, una frase, una costumbre.</span></p>
+                    </li>
+                    <li class="pregunta-item">
+                        <span class="pregunta-n">12.</span>
+                        <p class="pregunta-texto">La cosa boluda nuestra que extrañaría si dejara de pasar.</p>
+                    </li>
+                    <li class="pregunta-item">
+                        <span class="pregunta-n">13.</span>
+                        <p class="pregunta-texto">El plan que más quiero hacer y que prometimos hacer.</p>
+                    </li>
+                </ul>
+
+                <div class="premio-libre">
+                    <span class="premio-libre-tag">[ + Premio inventado ]</span>
+                    <p class="premio-libre-texto">Cada uno inventa una categoría en el momento. La que sea, lo que se haya quedado afuera.</p>
+                    <span class="premio-libre-nota">Sin reglas. Si te gustó, la guardamos para la próxima edición.</span>
+                </div>
+
+                <div class="btn-wrap" id="btn-1">
+                    <button class="btn-siguiente" onclick="desbloquear('parte-2','btn-1')">
+                        <div class="btn-inner">
+                            <span class="btn-texto">Siguiente parte</span>
+                            <span class="btn-icono">→</span>
+                        </div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- PARTE 02 — EL TEST -->
+            <div class="parte locked" id="parte-2" style="position: relative;">
+
+                <!-- POLAROIDS ZONA 2 — dentro de parte-2 para que aparezcan solo al desbloquear -->
+                <div class="polaroid-deco pol-07">
+                    <div class="pol-img-frame">
+                        <img src="fotos/polaroid-07.jpg" alt="" onerror="this.style.display='none'">
+                    </div>
+                    <div class="pol-caption">/ 07</div>
+                </div>
+                <div class="polaroid-deco pol-08">
+                    <div class="pol-img-frame">
+                        <img src="fotos/polaroid-08.jpg" alt="" onerror="this.style.display='none'">
+                    </div>
+                    <div class="pol-caption">/ 08</div>
+                </div>
+                <div class="polaroid-deco pol-09">
+                    <div class="pol-img-frame">
+                        <img src="fotos/polaroid-09.jpg" alt="" onerror="this.style.display='none'">
+                    </div>
+                    <div class="pol-caption">/ 09</div>
+                </div>
+                <div class="polaroid-deco pol-10">
+                    <div class="pol-img-frame">
+                        <img src="fotos/polaroid-10.jpg" alt="" onerror="this.style.display='none'">
+                    </div>
+                    <div class="pol-caption">/ 10</div>
+                </div>
+                <div class="polaroid-deco pol-11">
+                    <div class="pol-img-frame">
+                        <img src="fotos/polaroid-11.jpg" alt="" onerror="this.style.display='none'">
+                    </div>
+                    <div class="pol-caption">/ 11</div>
+                </div>
+                <div class="polaroid-deco pol-12">
+                    <div class="pol-img-frame">
+                        <img src="fotos/polaroid-12.jpg" alt="" onerror="this.style.display='none'">
+                    </div>
+                    <div class="pol-caption">/ 12</div>
+                </div>
+
+                <div class="parte-header">
+                    <span class="parte-num">[ 02 ]</span>
+                    <h2 class="parte-titulo">El Test · ¿cuánto nos cachamos?</h2>
+                </div>
+                <p class="parte-desc">Sin puntaje, sin perdedor. La gracia está en defender la respuesta.</p>
+                <div class="parte-divider"></div>
+
+                <div class="instrucciones">
+                    <span class="instrucciones-tag">[ Cómo se juega ]</span>
+                    <p>Cada uno responde por sí mismo, en silencio. Después leemos en voz alta una por una. Una sola regla: hay que justificar la respuesta. Si dices "mi olor favorito es X", tienes que defender por qué. Todos somos abogados de nuestra respuesta. La gracia está ahí, no en la respuesta seca.</p>
+                </div>
+
+                <ul class="preguntas">
+                    <li class="pregunta-item">
+                        <span class="pregunta-n">01.</span>
+                        <p class="pregunta-texto">Prenda favorita del clóset.</p>
+                    </li>
+                    <li class="pregunta-item">
+                        <span class="pregunta-n">02.</span>
+                        <p class="pregunta-texto">Bajón ideal de noche.</p>
+                    </li>
+                    <li class="pregunta-item">
+                        <span class="pregunta-n">03.</span>
+                        <p class="pregunta-texto">Café o bebida favorita.<span class="pregunta-extra">Orden específico, no genérico.</span></p>
+                    </li>
+                    <li class="pregunta-item">
+                        <span class="pregunta-n">04.</span>
+                        <p class="pregunta-texto">Máquina o ejercicio favorito del gym.</p>
+                    </li>
+                    <li class="pregunta-item">
+                        <span class="pregunta-n">05.</span>
+                        <p class="pregunta-texto">Mi miedo más raro.<span class="pregunta-extra">No el típico.</span></p>
+                    </li>
+                    <li class="pregunta-item">
+                        <span class="pregunta-n">06.</span>
+                        <p class="pregunta-texto">Mi olor favorito.<span class="pregunta-extra">No perfume. Un olor de la vida.</span></p>
+                    </li>
+                    <li class="pregunta-item">
+                        <span class="pregunta-n">07.</span>
+                        <p class="pregunta-texto">Libro favorito.</p>
+                    </li>
+                    <li class="pregunta-item">
+                        <span class="pregunta-n">08.</span>
+                        <p class="pregunta-texto">El profe, médico o jefe que más me ha marcado.</p>
+                    </li>
+                    <li class="pregunta-item">
+                        <span class="pregunta-n">09.</span>
+                        <p class="pregunta-texto">Mi pequeño placer culposo.<span class="pregunta-extra">No comida. Algo más raro.</span></p>
+                    </li>
+                    <li class="pregunta-item">
+                        <span class="pregunta-n">10.</span>
+                        <p class="pregunta-texto">La hora ideal a la que me iría a dormir todos los días.</p>
+                    </li>
+                    <li class="pregunta-item">
+                        <span class="pregunta-n">11.</span>
+                        <p class="pregunta-texto">Lugar feliz.</p>
+                    </li>
+                    <li class="pregunta-item">
+                        <span class="pregunta-n">12.</span>
+                        <p class="pregunta-texto">Momento del día en que más pienso en ti.</p>
+                    </li>
+                </ul>
+
+                <div class="btn-wrap" id="btn-2">
+                    <button class="btn-siguiente" onclick="mostrarCierre('btn-2')">
+                        <div class="btn-inner">
+                            <span class="btn-texto">Cerrar la sesión</span>
+                            <span class="btn-icono">✓</span>
+                        </div>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- CIERRE -->
+        <div class="cierre" id="cierre">
+            <p>Eso fue todo. Nos vemos al rato en el cumple del Pepe.</p>
+        </div>
+
+        <!-- FOOTER -->
+        <div class="footer">
+            <p class="footer-label">[ TAXSS · EDICIÓN LUPA · 06/2026 ]</p>
+        </div>
+
+    </div>
+
+    <script>
+        function desbloquear(idParte, idBtn) {
+            const btn = document.getElementById(idBtn);
+            btn.classList.add('oculto');
+            setTimeout(() => {
+                const parte = document.getElementById(idParte);
+                parte.classList.remove('locked');
+                parte.classList.add('unlocked');
+                setTimeout(() => {
+                    parte.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 200);
+            }, 350);
+        }
+
+        function mostrarCierre(idBtn) {
+            const btn = document.getElementById(idBtn);
+            btn.classList.add('oculto');
+            setTimeout(() => {
+                const cierre = document.getElementById('cierre');
+                cierre.classList.add('visible');
+                setTimeout(() => {
+                    cierre.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 200);
+            }, 350);
+        }
+    </script>
+
+</body>
+</html>
